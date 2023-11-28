@@ -4,21 +4,12 @@ import api.client.CourierClient;
 import api.model.Courier;
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
-import io.restassured.RestAssured;
-import io.restassured.response.Response;
+import io.restassured.response.ValidatableResponse;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.Matchers;
-import org.junit.Before;
 import org.junit.Test;
 
-import static io.restassured.RestAssured.given;
-
 public class CreateCourierTest {
-
-    @Before
-    public void setUp() {
-        RestAssured.baseURI = "http://qa-scooter.praktikum-services.ru";
-    }
 
     @Test
     @DisplayName("Successful create courier.")
@@ -28,10 +19,8 @@ public class CreateCourierTest {
         String login = RandomStringUtils.randomAlphanumeric(1,10);
         String password = RandomStringUtils.randomAlphanumeric(6,8);
         String firstName = RandomStringUtils.randomAlphabetic(3,10);
-        Courier courier = new Courier(login, password, firstName);
-        Response response = clientStep.sendPostRequestApiV1Courier(courier);
-        response.then().log().all()
-                .assertThat().body("ok", Matchers.is(true)).and().statusCode(201);
+        ValidatableResponse response = clientStep.getCourierApiV1Response(new Courier(login, password, firstName));
+        response.statusCode(201).and().assertThat().body("ok", Matchers.is(true));
 
     }
 
@@ -44,10 +33,9 @@ public class CreateCourierTest {
         String password = RandomStringUtils.randomAlphanumeric(6,8);
         String firstName = RandomStringUtils.randomAlphabetic(3,10);
         Courier courier = new Courier(login, password, firstName);
-        clientStep.sendPostRequestApiV1Courier(courier);
-        Response response = clientStep.sendPostRequestApiV1Courier(courier);
-        response.then().log().all()
-                .assertThat().body("message", Matchers.notNullValue()).and().statusCode(409);
+        clientStep.getCourierApiV1Response(courier);
+        ValidatableResponse response = clientStep.getCourierApiV1Response(courier);
+        response.statusCode(409).and().assertThat().body("message", Matchers.notNullValue());
     }
 
     @Test
@@ -59,14 +47,10 @@ public class CreateCourierTest {
         String password = RandomStringUtils.randomAlphanumeric(6,8);
         String firstName = RandomStringUtils.randomAlphabetic(3,10);
         Courier courier = new Courier(login, password, firstName);
-        given().log().all()
-                .header("Content-type", "application/json")
-                .body(courier)
-                .post("/api/v1/courier");
+        clientStep.getCourierApiV1Response(courier);
         courier.setPassword("abracadabra");
-        Response response = clientStep.sendPostRequestApiV1Courier(courier);
-        response.then().log().all()
-                .assertThat().body("message", Matchers.notNullValue()).and().statusCode(409);
+        ValidatableResponse response = clientStep.getCourierApiV1Response(courier);
+        response.statusCode(409).and().assertThat().body("message", Matchers.notNullValue());
     }
 
     @Test
@@ -77,9 +61,8 @@ public class CreateCourierTest {
         String firstName = RandomStringUtils.randomAlphabetic(3,10);
         Courier courier = new Courier();
         courier.setFirstName(firstName);
-        Response response = clientStep.sendPostRequestApiV1Courier(courier);
-        response.then().log().all()
-                .assertThat().body("message", Matchers.notNullValue()).and().statusCode(400);
+        ValidatableResponse response = clientStep.getCourierApiV1Response(courier);
+        response.statusCode(400).and().assertThat().body("message", Matchers.notNullValue());
     }
 
     @Test
@@ -90,9 +73,8 @@ public class CreateCourierTest {
         String password = RandomStringUtils.randomAlphabetic(6,8);
         Courier courier = new Courier();
         courier.setPassword(password);
-        Response response = clientStep.sendPostRequestApiV1Courier(courier);
-        response.then().log().all()
-                .assertThat().body("message", Matchers.notNullValue()).and().statusCode(400);
+        ValidatableResponse response = clientStep.getCourierApiV1Response(courier);
+        response.statusCode(400).and().assertThat().body("message", Matchers.notNullValue());
     }
 
     @Test
@@ -100,12 +82,10 @@ public class CreateCourierTest {
     @Description("Check status code and message existence in create courier without password and first name(Bad request).")
     public void createCourierWithoutPasswordAndFirstName(){
         CourierClient clientStep = new CourierClient();
-        String login = RandomStringUtils.randomAlphabetic(3,10);
         Courier courier = new Courier();
-        courier.setLogin(login);
-        Response response = clientStep.sendPostRequestApiV1Courier(courier);
-        response.then().log().all()
-                .assertThat().body("message", Matchers.notNullValue()).and().statusCode(400);
+        courier.setLogin(RandomStringUtils.randomAlphabetic(3,10));
+        ValidatableResponse response = clientStep.getCourierApiV1Response(courier);
+        response.statusCode(400).and().assertThat().body("message", Matchers.notNullValue());
     }
 
     @Test
@@ -113,14 +93,11 @@ public class CreateCourierTest {
     @Description("Check status code and message existence in create courier without password(Bad request).")
     public void createCourierWithoutPassword(){
         CourierClient clientStep = new CourierClient();
-        String login = RandomStringUtils.randomAlphabetic(1,10);
-        String firstName = RandomStringUtils.randomAlphabetic(3,10);
         Courier courier = new Courier();
-        courier.setLogin(login);
-        courier.setFirstName(firstName);
-        Response response = clientStep.sendPostRequestApiV1Courier(courier);
-        response.then().log().all()
-                .assertThat().body("message", Matchers.notNullValue()).and().statusCode(400);
+        courier.setLogin(RandomStringUtils.randomAlphabetic(1,10));
+        courier.setFirstName(RandomStringUtils.randomAlphabetic(3,10));
+        ValidatableResponse response = clientStep.getCourierApiV1Response(courier);
+        response.statusCode(400).and().assertThat().body("message", Matchers.notNullValue());
     }
 
     @Test
@@ -128,14 +105,10 @@ public class CreateCourierTest {
     @Description("Check status code and message existence in create courier without login(Bad request).")
     public void createCourierWithoutLogin(){
         CourierClient clientStep = new CourierClient();
-        String firstName = RandomStringUtils.randomAlphabetic(3,10);
-        String password = RandomStringUtils.randomAlphanumeric(6,8);
         Courier courier = new Courier();
-        courier.setFirstName(firstName);
-        courier.setPassword(password);
-        Response response = clientStep.sendPostRequestApiV1Courier(courier);
-        response.then().log().all()
-                .assertThat().body("message", Matchers.notNullValue()).and().statusCode(400);
+        courier.setFirstName(RandomStringUtils.randomAlphabetic(3,10));
+        courier.setPassword(RandomStringUtils.randomAlphanumeric(6,8));
+        ValidatableResponse response = clientStep.getCourierApiV1Response(courier);
+        response.statusCode(400).and().assertThat().body("message", Matchers.notNullValue());
     }
-
 }

@@ -3,28 +3,39 @@ package api.client;
 import api.model.Courier;
 import io.qameta.allure.Step;
 import io.qameta.allure.restassured.AllureRestAssured;
-import io.restassured.response.Response;
+import io.restassured.response.ValidatableResponse;
 
-import static io.restassured.RestAssured.given;
+final public class CourierClient extends BaseClient {
 
-public class CourierClient {
+    private static final String BASE_URL = "http://qa-scooter.praktikum-services.ru";
+    private static final String PATH_LOGIN = "/api/v1/courier/login";
+    private static final String PATH_COURIER = "/api/v1/courier";
 
     @Step("Send POST request to /api/v1/courier/login")
-    public Response sendPostRequestApiV1CourierLogin(Courier courier){
-        return given().log().all()
+    public ValidatableResponse getLoginFormResponse(Courier courier) {
+        return getRequestSpecification(BASE_URL, PATH_LOGIN)
                 .filter(new AllureRestAssured())
+                .and()
                 .header("Content-type", "application/json")
+                .and()
                 .body(courier)
                 .when()
-                .post("/api/v1/courier/login");
+                .post()
+                .then()
+                .log()
+                .all();
     }
 
     @Step("Send POST request to /api/v1/courier")
-    public Response sendPostRequestApiV1Courier(Courier courier){
-        return given().log().all()
+    public ValidatableResponse getCourierApiV1Response(Courier courier) {
+        return getRequestSpecification(BASE_URL, PATH_COURIER)
                 .header("Content-type", "application/json")
+                .and()
                 .body(courier)
                 .when()
-                .post("/api/v1/courier");
+                .post()
+                .then()
+                .log()
+                .all();
     }
 }
